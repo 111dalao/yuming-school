@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+.venv/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data outputs — only keep master_merged.json for deployment
+output/*
+!output/master_merged.json
+!output/.gitkeep
+
+# System
+.DS_Store
+Thumbs.db
+*.log
+
+# Claude
+.claude/
+
+# Large / unnecessary files
+uv.lock
+文档/
+生活与工作手册.docx
+生活与工作手册.pdf
+生活与工作手册.md
+*.bat
+translate_json.py
+使用说明.txt
+ziliao_hll_foreign/
+
+# Temp scripts
+merge_agent_reach.py
+merge_agent_reach2.py
+merge_reddit.py
+merge_data.py
+translate_new.py
+agent_reach_collect.py
+convert_to_html.py
+wait_change

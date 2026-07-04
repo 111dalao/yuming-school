@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yu Ming Charter School · 舆情监测看板</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/style.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/style.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080a;
+  --bg-card:rgba(255,255,255,.025);
+  --bg-card-inner:rgba(255,255,255,.04);
+  --bg-card-hover:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.06);
+  --border-hover:rgba(255,255,255,.1);
+  --text-primary:#e8eaed;
+  --text-secondary:rgba(255,255,255,.5);
+  --text-tertiary:rgba(255,255,255,.3);
+  --accent:#34d399;
+  --accent-dim:rgba(52,211,153,.1);
+  --accent-glow:rgba(52,211,153,.2);
+  --info:#60a5fa;
+  --purple:#a78bfa;
+  --radius:1.5rem;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --spring:cubic-bezier(.32,.72,0,1);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Geist Sans',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text-primary);
+  min-height:100dvh;overflow-x:hidden;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'Geist Mono',monospace}
+
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 700px 500px at 12% 8%,rgba(52,211,153,.04),transparent),
+    radial-gradient(ellipse 500px 600px at 88% 85%,rgba(96,165,250,.03),transparent),
+    radial-gradient(ellipse 300px 300px at 50% 45%,rgba(167,139,250,.02),transparent);
+}
+.noise{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.container{position:relative;z-index:2;max-width:1440px;margin:0 auto;padding:0 1.5rem 5rem}
+
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.75rem 0;border-bottom:1px solid var(--border);margin-bottom:2.5rem;
+}
+.nav-brand{display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:1.6rem;letter-spacing:-.02em}
+.nav-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 14px var(--accent-glow);
+  animation:blink 2.5s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-meta{display:flex;gap:1.25rem;align-items:center;font-size:.78rem;color:var(--text-tertiary)}
+.nav-meta .mono{color:var(--text-secondary)}
+.nav-detail{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.75rem;font-weight:500;
+  padding:.4rem .85rem;border-radius:8px;
+  background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.15);
+  color:var(--accent);text-decoration:none;
+  transition:all .25s var(--spring);
+}
+.nav-detail:hover{background:rgba(52,211,153,.15);box-shadow:0 0 20px rgba(52,211,153,.1)}
+.nav-detail svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Hero — full width */
+.hero{margin-bottom:1.25rem}
+.hero .card-inner{display:flex;align-items:center;gap:3rem;flex-wrap:wrap}
+.hero-stat{flex-shrink:0}
+.hero-detail{flex:1;min-width:280px}
+.hero-detail-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;
+}
+
+.card{
+  position:relative;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  padding:5px;transition:all .6s var(--spring);
+}
+.card:hover{border-color:var(--border-hover);box-shadow:0 0 60px rgba(52,211,153,.02)}
+.card-inner{
+  border-radius:calc(var(--radius) - 5px);
+  background:var(--bg-card-inner);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  padding:1.75rem;height:100%;
+}
+
+.stat-value{
+  font-size:clamp(3rem,6vw,5rem);font-weight:700;
+  letter-spacing:-.04em;line-height:1;
+  background:linear-gradient(135deg,var(--text-primary) 30%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-unit{
+  font-size:clamp(1rem,2vw,1.4rem);font-weight:400;
+  color:var(--text-tertiary);-webkit-text-fill-color:var(--text-tertiary);
+  margin-left:.25rem;
+}
+.stat-label{
+  font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;
+  color:var(--text-tertiary);margin-top:.5rem;
+}
+.stat-desc{font-size:.82rem;color:var(--text-secondary);margin-top:.3rem;line-height:1.55}
+
+.hero-metric{text-align:center}
+.hero-metric-val{
+  font-size:1.5rem;font-weight:700;font-family:'Geist Mono',monospace;
+  letter-spacing:-.03em;
+}
+.hero-metric-lbl{font-size:.68rem;color:var(--text-tertiary);margin-top:.2rem}
+
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:1.25rem;margin-bottom:1.25rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}
+.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+
+.section-hd{
+  font-size:1.1rem;font-weight:600;letter-spacing:-.015em;
+  margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;
+}
+.section-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:7px;
+  background:var(--accent-dim);color:var(--accent);font-size:.8rem;
+}
+.section-hint{
+  font-size:.65rem;color:var(--text-tertiary);font-weight:400;
+  margin-left:auto;opacity:0;transition:opacity .3s;
+}
+.card:hover .section-hint{opacity:1}
+
+/* Topic grid */
+.topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.topic-item{
+  padding:.9rem;border-radius:10px;cursor:pointer;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);
+  transition:all .35s var(--spring);
+  position:relative;
+}
+.topic-item:hover{
+  background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.2);
+  transform:translateY(-2px);box-shadow:0 8px 24px rgba(52,211,153,.06);
+}
+.topic-item::after{
+  content:'→ 查看';position:absolute;right:.6rem;top:.6rem;
+  font-size:.6rem;color:var(--accent);opacity:0;
+  transition:opacity .3s;
+}
+.topic-item:hover::after{opacity:1}
+.topic-name{font-size:.72rem;color:var(--text-tertiary);margin-bottom:.35rem;font-weight:500}
+.topic-count{font-size:1.35rem;font-weight:700;letter-spacing:-.03em;font-family:'Geist Mono',monospace}
+.topic-bar{height:2.5px;border-radius:2px;margin-top:.45rem;background:rgba(255,255,255,.05);overflow:hidden}
+.topic-bar-inner{height:100%;border-radius:2px;background:var(--accent);transition:width .9s var(--ease) .2s}
+
+.chart-area{height:300px;width:100%}
+.chart-area-sm{height:260px;width:100%}
+
+.cloud-wrap{position:relative;min-height:340px;overflow:hidden}
+#wordCanvas{display:block;width:100%;height:340px;cursor:pointer}
+
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.insight-item{
+  padding:.9rem;border-radius:10px;cursor:pointer;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);
+  transition:all .35s var(--spring);
+}
+.insight-item:hover{
+  background:rgba(96,165,250,.06);border-color:rgba(96,165,250,.2);
+  transform:translateY(-2px);
+}
+.insight-val{
+  font-size:1.6rem;font-weight:700;
+  font-family:'Geist Mono',monospace;letter-spacing:-.03em;
+}
+.insight-desc{font-size:.7rem;color:var(--text-tertiary);margin-top:.2rem;line-height:1.5}
+
+.footer{
+  margin-top:2.5rem;padding-top:1.25rem;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.72rem;color:var(--text-tertiary);
+}
+
+.reveal{
+  opacity:0;transform:translateY(20px);
+  transition:opacity .7s var(--ease),transform .7s var(--ease);
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.04s}.d2{transition-delay:.08s}.d3{transition-delay:.12s}
+.d4{transition-delay:.16s}.d5{transition-delay:.2s}.d6{transition-delay:.24s}
+
+@media(max-width:1024px){
+  .c4,.c5,.c6,.c7,.c8{grid-column:span 12}
+  .hero .card-inner{flex-direction:column;align-items:flex-start;gap:1.5rem}
+}
+@media(max-width:768px){
+  .topic-grid{grid-template-columns:repeat(2,1fr)}
+  .insight-grid{grid-template-columns:1fr}
+  .nav{flex-direction:column;gap:.75rem;align-items:flex-start}
+  .stat-value{font-size:2.8rem}
+  .container{padding:0 1rem 4rem}
+}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.15)}
+
+.date-input{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  color:var(--text-primary);padding:.35rem .6rem;border-radius:6px;
+  font-family:'Geist Mono',monospace;font-size:.72rem;
+  outline:none;transition:border-color .25s;color-scheme:dark;
+}
+.date-input:focus{border-color:var(--accent)}
+.date-input::-webkit-calendar-picker-indicator{filter:invert(.7)}
+
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .nav-dot{animation:none}
+  *{transition-duration:0s!important;animation-duration:0s!important}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="noise"></div>
+
+<div class="container">
+
+  <!-- Nav -->
+  <nav class="nav reveal">
+    <div class="nav-brand">
+      <span class="nav-dot"></span>
+      <span>Yu Ming Charter School</span>
+    </div>
+    <div class="nav-meta">
+      <a href="/dashboard/detail" class="nav-detail">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        数据详览
+      </a>
+      <span style="font-size:.72rem;color:var(--text-tertiary);margin-right:.25rem;">日期筛选</span>
+      <input type="date" id="globalFrom" class="date-input">
+      <span style="color:var(--text-tertiary);font-size:.72rem;">至</span>
+      <input type="date" id="globalTo" class="date-input">
+      <span>数据范围</span>
+      <span class="mono" id="dateRange">---</span>
+      <span class="mono" id="discussionCount">--- 条记录</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero reveal d1">
+    <div class="card">
+      <div class="card-inner">
+        <div class="hero-stat">
+          <div class="stat-value" id="totalStat">---</div>
+          <div class="stat-label">舆情记录总量</div>
+          <div class="stat-desc" id="totalDesc">正在加载数据...</div>
+        </div>
+        <div class="hero-detail">
+          <div class="hero-detail-grid" id="heroMetrics"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 1: Word Cloud + Topics -->
+  <div class="bento">
+    <div class="c7 card reveal d3">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">W</span>
+          高频词云
+          <span class="section-hint">点击词汇 → 查看相关讨论</span>
+        </div>
+        <div class="cloud-wrap">
+          <canvas id="wordCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="c5 card reveal d4">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">T</span>
+          主题维度分布
+          <span class="section-hint">点击 → 筛选该主题</span>
+        </div>
+        <div class="topic-grid" id="topicGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Daily Trend + Platform Pie -->
+  <div class="bento">
+    <div class="c7 card reveal d5">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">D</span>
+          每日舆情趋势
+          <span class="section-hint">点击数据点 → 查看当日讨论</span>
+        </div>
+        <div class="chart-area" id="dailyChart"></div>
+      </div>
+    </div>
+    <div class="c5 card reveal d6">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">P</span>
+          数据来源分布
+          <span class="section-hint">点击扇区 → 查看该平台</span>
+        </div>
+        <div class="chart-area" id="platformPie"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Topic Bar + Insights -->
+  <div class="bento">
+    <div class="c7 card reveal d5">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">B</span>
+          各主题讨论量对比
+          <span class="section-hint">点击柱条 → 查看该主题</span>
+        </div>
+        <div class="chart-area" id="topicBar"></div>
+      </div>
+    </div>
+    <div class="c5 card reveal d6">
+      <div class="card-inner">
+        <div class="section-hd">
+          <span class="section-icon">I</span>
+          关键洞察
+          <span class="section-hint">点击 → 查看详情</span>
+        </div>
+        <div class="insight-grid" id="insightGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer reveal">
+    <span>数据来源: Google News · YouTube · Oaklandside · Stanford Daily 等</span>
+    <span class="mono" id="genTime"></span>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   Utility
+   ============================================================ */
+function api(path) { return fetch(path).then(r => r.json()); }
+function qs(id) { return document.getElementById(id); }
+function fmt(n) { return n.toLocaleString('zh-CN'); }
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ============================================================
+   Click-to-filter navigation
+   ============================================================ */
+// Topic key mapping (stored globally after topics API call)
+let _topicKeyMap = {};
+
+function goDetail(params) {
+  const qs = new URLSearchParams(params).toString();
+  window.location.href = '/dashboard/detail?' + qs;
+}
+
+function goDetailTopic(topicName) {
+  const key = _topicKeyMap[topicName] || topicName;
+  goDetail({ groups: key });
+}
+
+function goDetailPlatform(platformName) {
+  goDetail({ platform: platformName });
+}
+
+function goDetailDate(dateStr) {
+  goDetail({ from: dateStr, to: dateStr });
+}
+
+function goDetailWord(word) {
+  goDetail({ q: word });
+}
+
+/* ============================================================
+   ECharts Theme
+   ============================================================ */
+const CHART_THEME = {
+  backgroundColor: 'transparent',
+  textStyle: { fontFamily: "'Geist Sans', system-ui, sans-serif", color: 'rgba(255,255,255,.5)' },
+  legend: { textStyle: { color: 'rgba(255,255,255,.45)', fontSize: 11 } },
+  tooltip: {
+    backgroundColor: 'rgba(10,12,16,.92)', borderColor: 'rgba(255,255,255,.08)',
+    textStyle: { color: '#e8eaed', fontSize: 12 }, extraCssText: 'border-radius:10px;backdrop-filter:blur(12px);'
+  },
+  grid: { left: 48, right: 20, top: 40, bottom: 36, containLabel: false },
+  xAxis: {
+    axisLine: { lineStyle: { color: 'rgba(255,255,255,.06)' } },
+    axisTick: { show: false },
+    axisLabel: { color: 'rgba(255,255,255,.35)', fontSize: 10 },
+    splitLine: { lineStyle: { color: 'rgba(255,255,255,.03)' } }
+  },
+  yAxis: {
+    axisLine: { show: false }, axisTick: { show: false },
+    axisLabel: { color: 'rgba(255,255,255,.35)', fontSize: 10 },
+    splitLine: { lineStyle: { color: 'rgba(255,255,255,.04)' } }
+  }
+};
+
+let _dateFrom = '';
+let _dateTo = '';
+
+function dateQuery() {
+  const parts = [];
+  if (_dateFrom) parts.push('from=' + _dateFrom);
+  if (_dateTo) parts.push('to=' + _dateTo);
+  return parts.length ? '?' + parts.join('&') : '';
+}
+
+async function loadAll() {
+  const dq = dateQuery();
+  const [stats, topics, daily, wordsResp, insights] = await Promise.all([
+    api('/api/stats' + dq),
+    api('/api/topics' + dq),
+    api('/api/daily' + dq),
+    api('/api/words' + dq),
+    api('/api/insights' + dq),
+  ]);
+
+  renderNav(stats);
+  renderHero(stats, topics);
+  renderTopics(topics);
+  renderDailyChart(daily);
+  renderPlatformPie();
+  renderTopicBar(topics);
+  renderInsights(insights);
+
+  if (wordsResp.loading) {
+    pollWordCloud();
+  } else {
+    renderWordCloud(wordsResp.words);
+  }
+}
+
+function onDateChange() {
+  _dateFrom = qs('globalFrom').value;
+  _dateTo = qs('globalTo').value;
+  loadAll();
+}
+
+async function init() {
+  qs('genTime').textContent = 'Generated ' + new Date().toISOString().slice(0, 10);
+
+  const stats = await api('/api/stats');
+  const daily = await api('/api/daily');
+
+  if (stats.date_range.start) {
+    qs('globalFrom').min = stats.date_range.start;
+    qs('globalFrom').max = stats.date_range.end;
+    qs('globalTo').min = stats.date_range.start;
+    qs('globalTo').max = stats.date_range.end;
+  }
+
+  qs('globalFrom').addEventListener('change', onDateChange);
+  qs('globalTo').addEventListener('change', onDateChange);
+
+  loadAll();
+}
+
+function pollWordCloud() {
+  const canvas = qs('wordCanvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = wrap.clientWidth * dpr;
+  canvas.height = 340 * dpr;
+  canvas.style.width = wrap.clientWidth + 'px';
+  canvas.style.height = '340px';
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = 'rgba(255,255,255,.25)';
+  ctx.font = '500 14px "Geist Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('词云数据计算中，请稍候...', wrap.clientWidth / 2, 170);
+
+  const timer = setInterval(async () => {
+    try {
+      const resp = await api('/api/words' + dateQuery());
+      if (!resp.loading) {
+        clearInterval(timer);
+        renderWordCloud(resp.words);
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
+/* === Nav === */
+function renderNav(stats) {
+  const dr = stats.date_range;
+  qs('dateRange').textContent = dr.start + ' ~ ' + dr.end;
+  qs('discussionCount').textContent = fmt(stats.total_discussions) + ' 条记录';
+}
+
+/* === Hero === */
+function renderHero(stats, topics) {
+  qs('totalStat').innerHTML = fmt(stats.total_discussions) + '<span class="stat-unit">条</span>';
+  qs('totalDesc').textContent =
+    '涵盖 ' + stats.total_topics + ' 个主题维度，来自 ' + stats.total_platforms + ' 个平台，时间跨度 ' + stats.total_days + ' 天';
+
+  // Hero metric pills
+  const topTopic = topics[0];
+  const colors = ['#34d399','#60a5fa','#a78bfa','#fbbf24'];
+  const metrics = [
+    { val: stats.total_topics + ' 个', lbl: '主题维度', color: colors[0] },
+    { val: stats.total_platforms + ' 个', lbl: '数据平台', color: colors[1] },
+    { val: stats.total_days + ' 天', lbl: '时间跨度', color: colors[2] },
+    { val: topTopic ? topTopic.name : '---', lbl: '最活跃主题', color: colors[3] },
+  ];
+  qs('heroMetrics').innerHTML = metrics.map(m =>
+    '<div class="hero-metric">' +
+    '<div class="hero-metric-val" style="color:' + m.color + '">' + m.val + '</div>' +
+    '<div class="hero-metric-lbl">' + m.lbl + '</div></div>'
+  ).join('');
+}
+
+/* === Topic Grid (clickable) === */
+function renderTopics(data) {
+  // Build key map for click navigation
+  _topicKeyMap = {};
+  data.forEach(d => { _topicKeyMap[d.name] = d.key; });
+
+  const maxCount = data.length ? data[0].count : 1;
+  const colors = ['#34d399','#60a5fa','#a78bfa','#fbbf24','#f87171','#f472b6','#22d3ee','#fb923c','#a3e635'];
+  const html = data.map((d, i) => {
+    const barPct = (d.count / maxCount * 100).toFixed(1);
+    return '<div class="topic-item" onclick="goDetailTopic(\'' +
+      d.name.replace(/'/g, "\\'") + '\')" title="点击查看「' + d.name + '」相关讨论">' +
+      '<div class="topic-name">' + d.name + '</div>' +
+      '<div class="topic-count" style="color:' + colors[i % colors.length] + '">' + fmt(d.count) + '</div>' +
+      '<div class="topic-bar"><div class="topic-bar-inner" style="width:0;background:' +
+      colors[i % colors.length] + '" data-w="' + barPct + '"></div></div></div>';
+  }).join('');
+  qs('topicGrid').innerHTML = html;
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      qs('topicGrid').querySelectorAll('.topic-bar-inner').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    }, 300);
+  });
+}
+
+/* === Word Cloud (clickable words) === */
+function renderWordCloud(words) {
+  const canvas = qs('wordCanvas');
+  const ctx = canvas.getContext('2d');
+  let placed = [];
+  let frame;
+
+  const palette = [
+    'rgba(52,211,153,', 'rgba(110,231,183,', 'rgba(96,165,250,',
+    'rgba(167,139,250,', 'rgba(251,191,36,', 'rgba(248,113,113,',
+    'rgba(244,114,182,', 'rgba(34,211,238,',
+  ];
+
+  // Canvas click handler
+  canvas.onclick = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    for (const w of placed) {
+      if (mx >= w.x - w.tw/2 && mx <= w.x + w.tw/2 &&
+          my >= w.y - w.th/2 && my <= w.y + w.th/2) {
+        goDetailWord(w.name);
+        return;
+      }
+    }
+  };
+
+  function resize() {
+    const wrap = canvas.parentElement;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = wrap.clientWidth * dpr;
+    canvas.height = 340 * dpr;
+    canvas.style.width = wrap.clientWidth + 'px';
+    canvas.style.height = '340px';
+    ctx.scale(dpr, dpr);
+    draw();
+  }
+
+  function draw() {
+    const W = canvas.width / (window.devicePixelRatio || 1);
+    const H = 340;
+    ctx.clearRect(0, 0, W, H);
+    if (!words.length) return;
+    const maxVal = words[0].value;
+    const sorted = [...words].sort((a, b) => b.value - a.value);
+    placed = [];
+    const cx = W / 2, cy = H / 2;
+    for (const w of sorted) {
+      const ratio = w.value / maxVal;
+      const fontSize = Math.max(12, Math.round(ratio * 50 + 8));
+      const weight = ratio > 0.5 ? '700' : ratio > 0.25 ? '600' : '500';
+      ctx.font = weight + ' ' + fontSize + 'px "Geist Sans", sans-serif';
+      const tw = ctx.measureText(w.name).width + 12;
+      const th = fontSize + 6;
+      const pos = spiral(cx, cy, tw, th, W, H);
+      if (!pos) continue;
+      placed.push({ name: w.name, x: pos.x, y: pos.y, fontSize, tw, th, weight, ratio });
+    }
+    animateIn(0);
+  }
+
+  function animateIn(start) {
+    if (frame) cancelAnimationFrame(frame);
+    function step() {
+      if (start >= placed.length) return;
+      const batch = Math.min(5, placed.length - start);
+      for (let i = 0; i < batch; i++) {
+        const w = placed[start + i];
+        if (!w) continue;
+        const ci = (start + i) % palette.length;
+        const alpha = w.ratio > 0.5 ? 0.9 : w.ratio > 0.25 ? 0.7 : 0.48;
+        ctx.font = w.weight + ' ' + w.fontSize + 'px "Geist Sans", sans-serif';
+        ctx.fillStyle = palette[ci] + alpha + ')';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(w.name, w.x, w.y);
+      }
+      start += batch;
+      if (start < placed.length) frame = requestAnimationFrame(step);
+    }
+    frame = requestAnimationFrame(step);
+  }
+
+  function spiral(cx, cy, tw, th, W, H) {
+    for (let r = 0; r < 350; r += 3) {
+      for (let a = 0; a < Math.PI * 2; a += 0.3) {
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a) * 0.55;
+        if (x - tw/2 < 6 || x + tw/2 > W - 6 || y - th/2 < 6 || y + th/2 > H - 6) continue;
+        if (!hit(x, y, tw, th)) return { x, y };
+      }
+    }
+    return null;
+  }
+
+  function hit(x, y, tw, th) {
+    for (const p of placed) {
+      if (Math.abs(x - p.x) < (tw + p.tw) / 2 + 4 &&
+          Math.abs(y - p.y) < (th + p.th) / 2 + 2) return true;
+    }
+    return false;
+  }
+
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 600);
+}
+
+/* === Daily Trend (clickable data points) === */
+let _dailyChart = null;
+function renderDailyChart(data) {
+  if (_dailyChart) { _dailyChart.dispose(); _dailyChart = null; }
+  _dailyChart = echarts.init(qs('dailyChart'), null, { renderer: 'canvas' });
+  const fullDates = data.map(d => d.date);
+  const shortDates = data.map(d => d.date.replace(/^\d{4}-/, ''));
+  const counts = data.map(d => d.count);
+
+  _dailyChart.setOption({
+    ...CHART_THEME,
+    tooltip: {
+      ...CHART_THEME.tooltip, trigger: 'axis',
+      formatter: function(ps) {
+        const p = ps[0];
+        return '<div style="font-weight:600;margin-bottom:4px">' + fullDates[p.dataIndex] + '</div>' +
+          '<div style="color:rgba(255,255,255,.7)">讨论数: <span style="color:#34d399;font-weight:600">' + fmt(p.value) + '</span></div>' +
+          '<div style="font-size:.7rem;color:var(--text-tertiary);margin-top:.3rem">点击查看当日详情</div>';
+      }
+    },
+    grid: { left: 52, right: 20, top: 30, bottom: 36 },
+    xAxis: { ...CHART_THEME.xAxis, type: 'category', data: shortDates, boundaryGap: false },
+    yAxis: { ...CHART_THEME.yAxis, type: 'value' },
+    series: [{
+      type: 'line', data: counts, smooth: true, symbol: 'circle', symbolSize: 8,
+      lineStyle: { width: 2.5, color: new echarts.graphic.LinearGradient(0,0,1,0,[
+        { offset: 0, color: '#34d399' }, { offset: 1, color: '#60a5fa' }
+      ])},
+      itemStyle: { color: '#34d399', borderColor: '#06080a', borderWidth: 2 },
+      areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[
+        { offset: 0, color: 'rgba(52,211,153,.18)' }, { offset: 1, color: 'rgba(52,211,153,.01)' }
+      ])}
+    }]
+  });
+
+  // Click handler for daily trend
+  _dailyChart.off('click');
+  _dailyChart.on('click', function(params) {
+    if (params.componentType === 'series') {
+      const idx = params.dataIndex;
+      goDetailDate(fullDates[idx]);
+    }
+  });
+
+  window.addEventListener('resize', () => _dailyChart && _dailyChart.resize());
+}
+
+/* === Platform Pie (clickable sectors) === */
+let _platformPie = null;
+function renderPlatformPie() {
+  fetch('/api/platforms' + dateQuery()).then(r => r.json()).then(data => {
+    if (_platformPie) { _platformPie.dispose(); _platformPie = null; }
+    _platformPie = echarts.init(qs('platformPie'), null, { renderer: 'canvas' });
+    const colors = ['#34d399','#60a5fa','#a78bfa','#fbbf24','#f87171','#f472b6','#22d3ee','#fb923c'];
+
+    _platformPie.setOption({
+      ...CHART_THEME,
+      tooltip: {
+        ...CHART_THEME.tooltip, trigger: 'item',
+        formatter: function(p) {
+          return '<div style="font-weight:600;margin-bottom:4px">' + p.name + '</div>' +
+            '<div style="color:rgba(255,255,255,.7)">讨论数: <span style="color:#34d399;font-weight:600">' + fmt(p.value) + '</span> (' + p.percent + '%)</div>' +
+            '<div style="font-size:.7rem;color:var(--text-tertiary);margin-top:.3rem">点击查看该平台详情</div>';
+        }
+      },
+      series: [{
+        type: 'pie', radius: ['40%','72%'], center: ['50%','52%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 4, borderColor: '#06080a', borderWidth: 2 },
+        label: { show: true, formatter: '{d}%', color: 'rgba(255,255,255,.55)', fontSize: 11, fontFamily: "'Geist Mono', monospace" },
+        emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' }, scaleSize: 8 },
+        data: data.map((d, i) => ({ ...d, itemStyle: { color: colors[i % colors.length] } }))
+      }]
+    });
+
+    // Click handler for pie sectors
+    _platformPie.off('click');
+    _platformPie.on('click', function(params) {
+      if (params.componentType === 'series') {
+        goDetailPlatform(params.name);
+      }
+    });
+
+    window.addEventListener('resize', () => _platformPie && _platformPie.resize());
+  });
+}
+
+/* === Topic Bar (clickable bars) === */
+let _topicBar = null;
+function renderTopicBar(data) {
+  if (_topicBar) { _topicBar.dispose(); _topicBar = null; }
+  _topicBar = echarts.init(qs('topicBar'), null, { renderer: 'canvas' });
+  const names = data.map(d => d.name).reverse();
+  const counts = data.map(d => d.count).reverse();
+  const keys = data.map(d => d.key).reverse();
+
+  _topicBar.setOption({
+    ...CHART_THEME,
+    tooltip: {
+      ...CHART_THEME.tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+      formatter: function(ps) {
+        return '<div style="font-weight:600;margin-bottom:4px">' + names[ps[0].dataIndex] + '</div>' +
+          '<div style="color:rgba(255,255,255,.7)">数量: <span style="color:#34d399;font-weight:600">' + fmt(ps[0].value) + '</span></div>' +
+          '<div style="font-size:.7rem;color:var(--text-tertiary);margin-top:.3rem">点击查看该主题详情</div>';
+      }
+    },
+    grid: { left: 100, right: 20, top: 20, bottom: 30 },
+    yAxis: { ...CHART_THEME.yAxis, type: 'category', data: names, axisLabel: { ...CHART_THEME.yAxis.axisLabel, fontSize: 11 } },
+    xAxis: { ...CHART_THEME.xAxis, type: 'value' },
+    series: [{
+      type: 'bar', data: counts, barWidth: 18, borderRadius: [0,4,4,0],
+      itemStyle: {
+        color: function(p) {
+          return new echarts.graphic.LinearGradient(0,0,1,0,[
+            { offset: 0, color: 'rgba(52,211,153,.3)' }, { offset: 1, color: '#34d399' }
+          ]);
+        }
+      },
+      label: { show: true, position: 'right', formatter: '{c}', color: 'rgba(255,255,255,.55)', fontSize: 11, fontFamily: "'Geist Mono', monospace" }
+    }]
+  });
+
+  // Click handler for topic bars
+  _topicBar.off('click');
+  _topicBar.on('click', function(params) {
+    if (params.componentType === 'series') {
+      const idx = params.dataIndex;
+      goDetail({ groups: keys[idx] });
+    }
+  });
+
+  window.addEventListener('resize', () => _topicBar && _topicBar.resize());
+}
+
+/* === Insights (clickable items) === */
+function renderInsights(data) {
+  const items = [
+    {
+      val: fmt(data.total_discussions), color: '#34d399', desc: '讨论记录总数',
+      click: function() { goDetail({}); }
+    },
+    {
+      val: data.total_words_k + 'K', color: '#60a5fa', desc: '累计内容量（字）',
+      click: function() { goDetail({}); }
+    },
+    {
+      val: fmt(data.peak_day.count) + ' 条', color: '#fbbf24',
+      desc: (data.peak_day.date || '---') + ' 单日峰值',
+      click: function() { if(data.peak_day.date) goDetailDate(data.peak_day.date); }
+    },
+    {
+      val: data.top_group.name, color: '#a78bfa',
+      desc: '最活跃主题 (' + fmt(data.top_group.count) + ' 条)',
+      click: function() {
+        const key = _topicKeyMap[data.top_group.name] || '';
+        if (key) goDetail({ groups: key });
+      }
+    },
+  ];
+  const html = items.map((d, i) =>
+    '<div class="insight-item" id="insight-' + i + '">' +
+    '<div class="insight-val" style="color:' + d.color + '">' + d.val + '</div>' +
+    '<div class="insight-desc">' + d.desc + '</div></div>'
+  ).join('');
+  qs('insightGrid').innerHTML = html;
+
+  // Attach click handlers
+  items.forEach((d, i) => {
+    const el = qs('insight-' + i);
+    if (el) el.addEventListener('click', d.click);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
