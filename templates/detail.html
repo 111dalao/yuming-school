@@ -46,8 +46,9 @@ body{
 .container{position:relative;z-index:2;max-width:1440px;margin:0 auto;padding:0 1.5rem 4rem}
 
 .header{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
   padding:1.5rem 0;border-bottom:1px solid var(--border);margin-bottom:1.75rem;
+  flex-wrap:wrap;
 }
 .back-link{
   display:inline-flex;align-items:center;gap:.5rem;
@@ -290,6 +291,31 @@ tbody td{padding:.75rem 1rem;font-size:.9rem;vertical-align:top;overflow:hidden;
   .detail-meta{grid-template-columns:1fr}
   .meta-full{grid-column:span 1}
   .col-platform,.col-topic,.col-relevance{display:none}
+  .container{padding:0 1rem 3rem}
+  .header h1{font-size:1.1rem}
+  .filter-bar input[type="text"]{min-width:auto;width:100%}
+  .filter-bar input[type="date"]{width:auto;flex:1}
+  .header-right{font-size:.75rem;gap:.5rem}
+}
+
+@media(max-width:640px){
+  .header{flex-direction:column;align-items:flex-start}
+  .header h1{font-size:1rem}
+  .result-list > div{padding:.75rem}
+  .col-title{font-size:.82rem}
+  .col-snippet{font-size:.7rem}
+  .col-meta{font-size:.65rem}
+  .filter-bar{padding:.75rem;gap:.4rem}
+  .filter-bar input,.filter-bar select,.ms-trigger{font-size:.78rem;padding:.4rem .6rem}
+  .filter-bar input[type="date"]{width:100%}
+  .filter-group{width:100%}
+  .ms-trigger{min-width:100%}
+  /* Stack pagination */
+  .pagination{flex-wrap:wrap;gap:.5rem;justify-content:center}
+  /* Modal smaller */
+  .modal-content{width:96vw;padding:1.25rem}
+  .modal-title{font-size:1.05rem}
+  .modal-body{font-size:.85rem}
 }
 </style>
 </head>

@@ -204,13 +204,34 @@ body{
 @media(max-width:1024px){
   .c4,.c5,.c6,.c7,.c8{grid-column:span 12}
   .hero .card-inner{flex-direction:column;align-items:flex-start;gap:1.5rem}
-}
-@media(max-width:768px){
-  .topic-grid{grid-template-columns:repeat(2,1fr)}
-  .insight-grid{grid-template-columns:1fr}
-  .nav{flex-direction:column;gap:.75rem;align-items:flex-start}
-  .stat-value{font-size:2.8rem}
+  .chart-area{height:260px}.chart-area-sm{height:220px}
   .container{padding:0 1rem 4rem}
+  .nav{flex-wrap:wrap;gap:.75rem}
+  .nav-meta{flex-wrap:wrap;gap:.6rem;font-size:.7rem;width:100%}
+}
+@media(max-width:640px){
+  .topic-grid{grid-template-columns:1fr}
+  .insight-grid{grid-template-columns:1fr}
+  .nav{flex-direction:column;align-items:flex-start}
+  .nav-brand{font-size:1.2rem}
+  .stat-value{font-size:2.4rem}
+  .chart-area{height:220px}.chart-area-sm{height:200px}
+  .container{padding:0 .75rem 3rem}
+  .hero .card-inner{padding:1.2rem}
+  .card-inner{padding:1rem}
+  .section-hd{font-size:.95rem}
+  .date-input{font-size:.65rem;padding:.3rem .4rem}
+  .hero-detail-grid{grid-template-columns:repeat(2,1fr)}
+  /* Make topic items easier to tap */
+  .topic-item{padding:1rem .8rem;min-height:60px}
+  .topic-name{font-size:.68rem}
+  .topic-count{font-size:1.15rem}
+  .insight-val{font-size:1.3rem}
+  .insight-desc{font-size:.65rem}
+  .nav-meta{gap:.4rem}
+  /* Cloud canvas shorter on phones */
+  #wordCanvas{height:260px}
+  .cloud-wrap{min-height:260px}
 }
 
 ::-webkit-scrollbar{width:5px}
@@ -493,15 +514,16 @@ function pollWordCloud() {
   const ctx = canvas.getContext('2d');
   const wrap = canvas.parentElement;
   const dpr = window.devicePixelRatio || 1;
+  const phoneH = window.matchMedia('(max-width:640px)').matches ? 260 : 340;
   canvas.width = wrap.clientWidth * dpr;
-  canvas.height = 340 * dpr;
+  canvas.height = phoneH * dpr;
   canvas.style.width = wrap.clientWidth + 'px';
-  canvas.style.height = '340px';
+  canvas.style.height = phoneH + 'px';
   ctx.scale(dpr, dpr);
   ctx.fillStyle = 'rgba(255,255,255,.25)';
   ctx.font = '500 14px "Geist Sans", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('词云数据计算中，请稍候...', wrap.clientWidth / 2, 170);
+  ctx.fillText('词云数据计算中，请稍候...', wrap.clientWidth / 2, phoneH / 2);
 
   const timer = setInterval(async () => {
     try {
@@ -601,17 +623,19 @@ function renderWordCloud(words) {
   function resize() {
     const wrap = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
+    const mqPhone = window.matchMedia('(max-width:640px)');
+    const H = mqPhone.matches ? 260 : 340;
     canvas.width = wrap.clientWidth * dpr;
-    canvas.height = 340 * dpr;
+    canvas.height = H * dpr;
     canvas.style.width = wrap.clientWidth + 'px';
-    canvas.style.height = '340px';
+    canvas.style.height = H + 'px';
     ctx.scale(dpr, dpr);
     draw();
   }
 
   function draw() {
     const W = canvas.width / (window.devicePixelRatio || 1);
-    const H = 340;
+    const H = (window.matchMedia('(max-width:640px)').matches ? 260 : 340);
     ctx.clearRect(0, 0, W, H);
     if (!words.length) return;
     const maxVal = words[0].value;
