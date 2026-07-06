@@ -6,31 +6,17 @@
 <title>给海玲的美国之行生活手册</title>
 <style>
 :root {
-    --text: #1a1a1a;
-    --bg: #fff;
-    --accent: #1a5276;
-    --border: #d5d8dc;
-    --code-bg: #f4f6f7;
-    --table-stripe: #f7f9fc;
-    --warning-bg: #fef9e7;
-    --warning-border: #f9e79f;
-    --tip-bg: #eaf2f8;
-    --tip-border: #aed6f1;
-    --muted: #7f8c8d;
+    --text: #1a1a1a; --bg: #fff; --accent: #1a5276; --border: #d5d8dc;
+    --code-bg: #f4f6f7; --table-stripe: #f7f9fc;
+    --warning-bg: #fef9e7; --warning-border: #f9e79f;
+    --tip-bg: #eaf2f8; --tip-border: #aed6f1; --muted: #7f8c8d;
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --text: #ddd;
-        --bg: #1a1a2e;
-        --accent: #85c1e9;
-        --border: #444;
-        --code-bg: #2c2c3e;
-        --table-stripe: #252540;
-        --warning-bg: #3e3520;
-        --warning-border: #7d6608;
-        --tip-bg: #1a3a4a;
-        --tip-border: #1a5276;
-        --muted: #aaa;
+        --text: #ddd; --bg: #1a1a2e; --accent: #85c1e9; --border: #444;
+        --code-bg: #2c2c3e; --table-stripe: #252540;
+        --warning-bg: #3e3520; --warning-border: #7d6608;
+        --tip-bg: #1a3a4a; --tip-border: #1a5276; --muted: #aaa;
     }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,52 +33,33 @@ p { margin: 10px 0; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* 目录 */
 nav.toc { background: var(--code-bg); border-radius: 8px; padding: 20px 28px; margin: 24px 0 32px; }
 nav.toc ol { padding-left: 20px; }
 nav.toc li { margin: 4px 0; }
 
-/* 表格 */
 table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.95em; }
 th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
 th { background: var(--accent); color: #fff; font-weight: 600; }
 tr:nth-child(even) td { background: var(--table-stripe); }
 
-/* 代码块 */
 code { font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace; font-size: 0.9em; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; }
 pre { background: var(--code-bg); border-radius: 8px; padding: 16px 20px; overflow-x: auto; margin: 12px 0; line-height: 1.6; }
 pre code { padding: 0; background: none; }
 
-/* 引用 / 提示块 */
 blockquote { border-left: 4px solid var(--accent); padding: 8px 16px; margin: 16px 0; background: var(--tip-bg); border-radius: 0 6px 6px 0; }
-
-/* 分割线 */
 hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
 
-/* 仪表盘按钮 */
 .dashboard-btn {
-    position: fixed;
-    top: 16px;
-    right: 24px;
-    background: var(--accent);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.9em;
-    font-weight: 600;
+    position: fixed; top: 16px; right: 24px;
+    background: var(--accent); color: #fff;
+    padding: 10px 20px; border-radius: 8px;
+    font-size: 0.9em; font-weight: 600;
     text-decoration: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: opacity 0.2s, transform 0.2s;
-    z-index: 1000;
+    transition: opacity 0.2s, transform 0.2s; z-index: 1000;
 }
-.dashboard-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    text-decoration: none;
-    color: #fff;
-}
+.dashboard-btn:hover { opacity: 0.9; transform: translateY(-1px); text-decoration: none; color: #fff; }
 
-/* 打印 */
 @media print {
     body { max-width: 100%; padding: 0; font-size: 12pt; line-height: 1.6; }
     h2 { break-before: page; }
@@ -100,14 +67,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
     nav.toc { break-after: page; }
     pre, table { break-inside: avoid; }
     a { color: inherit; }
+    .dashboard-btn { display: none; }
 }
 </style>
 </head>
 <body>
 <a class="dashboard-btn" href="/dashboard" title="数据仪表盘">📊 数据仪表盘</a>
+<h1 id="给海玲的美国之行生活手册">给海玲的美国之行生活手册</h1>
 <nav class="toc"><h3>目录</h3><ol>
-<li><a href="#yu-ming-charter-school-教育交流研究生指南-2026-08-2027-05">—— Yu Ming Charter School 教育交流研究生指南（2026.08 – 2027.05）</a></li>
-<li><a href="#目录">目录</a></li>
 <li><a href="#1-欢迎辞与关于本手册">1. 欢迎辞与关于本手册</a></li>
 <li><a href="#2-关于-yu-ming-charter-school">2. 关于 Yu Ming Charter School</a></li>
 <li><a href="#3-湾区与奥克兰概览">3. 湾区与奥克兰概览</a></li>
@@ -128,17 +95,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
 <li><a href="#18-附录">18. 附录</a></li>
 <li><a href="#结语">结语</a></li>
 </ol></nav>
-<h1 id="给海玲的美国之行生活手册">给海玲的美国之行生活手册</h1>
 
 <h2 id="yu-ming-charter-school-教育交流研究生指南-2026-08-2027-05">—— Yu Ming Charter School 教育交流研究生指南（2026.08 – 2027.05）</h2>
 
 <hr>
 
-<h2 id="目录">目录</h2>
-
-<p>1. <a href="#1-欢迎辞与关于本手册">欢迎辞与关于本手册</a><br>2. <a href="#2-关于-yu-ming-charter-school">关于 Yu Ming Charter School</a><br>3. <a href="#3-湾区与奥克兰概览">湾区与奥克兰概览</a><br>4. <a href="#4-出发前准备">出发前准备</a><br>5. <a href="#5-抵达与第一周">抵达与第一周</a><br>6. <a href="#6-住宿指南">住宿指南</a><br>7. <a href="#7-银行与财务">银行与财务</a><br>8. <a href="#8-通讯与网络">通讯与网络</a><br>9. <a href="#9-交通出行">交通出行</a><br>10. <a href="#10-气候与穿衣指南">气候与穿衣指南</a><br>11. <a href="#11-医疗与保险">医疗与保险</a><br>12. <a href="#12-安全指南">安全指南</a><br>13. <a href="#13-在-yu-ming-工作">在 Yu Ming 工作</a><br>14. <a href="#14-日常生活">日常生活</a><br>15. <a href="#15-文化适应与社交">文化适应与社交</a><br>16. <a href="#16-探索湾区">探索湾区</a><br>17. <a href="#17-紧急信息与重要联系方式">紧急信息与重要联系方式</a><br>18. <a href="#18-附录">附录</a></p>
-
-<hr>
 
 <h2 id="1-欢迎辞与关于本手册">1. 欢迎辞与关于本手册</h2>
 
